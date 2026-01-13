@@ -1,49 +1,51 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../utils/axios';
 
 const initialState = {
   gigs: [],
-  gig: null, 
+  gig: null,
   loading: false,
   error: null,
 };
-
 
 export const fetchGigs = createAsyncThunk(
   'gigs/fetchAll',
   async (keyword = '', { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/gigs?search=${keyword}`);
+      const { data } = await api.get(`/gigs?search=${keyword}`);
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
-
 
 export const createGig = createAsyncThunk(
   'gigs/create',
   async (gigData, { rejectWithValue }) => {
     try {
-      const config = { headers: { 'Content-Type': 'application/json' } };
-      const { data } = await axios.post('/api/gigs', gigData, config);
+      const { data } = await api.post('/gigs', gigData);
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
-
 
 export const fetchGigById = createAsyncThunk(
   'gigs/fetchById',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/gigs/${id}`);
+      const { data } = await api.get(`/gigs/${id}`);
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -54,8 +56,9 @@ const gigSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      
-      .addCase(fetchGigs.pending, (state) => { state.loading = true; })
+      .addCase(fetchGigs.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchGigs.fulfilled, (state, action) => {
         state.loading = false;
         state.gigs = action.payload;
@@ -64,14 +67,14 @@ const gigSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(createGig.fulfilled, (state, action) => {
         state.gigs.unshift(action.payload);
       })
-      
+
       .addCase(fetchGigById.pending, (state) => {
         state.loading = true;
-        state.gig = null; 
+        state.gig = null;
       })
       .addCase(fetchGigById.fulfilled, (state, action) => {
         state.loading = false;

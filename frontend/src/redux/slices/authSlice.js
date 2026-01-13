@@ -1,7 +1,5 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
+import api from '../../utils/axios';
 
 const userInfoFromStorage = localStorage.getItem('userInfo')
   ? JSON.parse(localStorage.getItem('userInfo'))
@@ -13,72 +11,59 @@ const initialState = {
   error: null,
 };
 
-
 export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-      
-      const { data } = await axios.post('/api/auth/login', { email, password }, config);
-      
-      
+      const { data } = await api.post('/auth/login', {
+        email,
+        password,
+      });
+
       localStorage.setItem('userInfo', JSON.stringify(data));
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
+        error.response?.data?.message || error.message
       );
     }
   }
 );
-
 
 export const register = createAsyncThunk(
   'auth/register',
   async ({ name, email, password }, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-      const { data } = await axios.post('/api/auth/register', { name, email, password }, config);
+      const { data } = await api.post('/auth/register', {
+        name,
+        email,
+        password,
+      });
+
       localStorage.setItem('userInfo', JSON.stringify(data));
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
+        error.response?.data?.message || error.message
       );
     }
   }
 );
 
-
-export const logout = createAsyncThunk('auth/logout', async () => {
-  
-  await axios.post('/api/auth/logout');
-  
-  localStorage.removeItem('userInfo');
-});
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async () => {
+    await api.post('/auth/logout');
+    localStorage.removeItem('userInfo');
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -91,7 +76,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -104,7 +89,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(logout.fulfilled, (state) => {
         state.userInfo = null;
       });
