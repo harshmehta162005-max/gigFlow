@@ -26,9 +26,18 @@ export const createGig = createAsyncThunk(
   'gigs/create',
   async (gigData, { rejectWithValue }) => {
     try {
-      const { data } = await api.post('/gigs', gigData);
+      // ✅ FIX: Ensure budget is a number, not a string
+      const cleanData = {
+        ...gigData,
+        budget: Number(gigData.budget)
+      };
+
+      const { data } = await api.post('/gigs', cleanData);
       return data;
     } catch (error) {
+      // This will print the exact reason the server rejected it
+      console.error("Create Gig Failed:", error.response?.data);
+      
       return rejectWithValue(
         error.response?.data?.message || error.message
       );
