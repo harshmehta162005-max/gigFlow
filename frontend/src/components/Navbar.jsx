@@ -35,7 +35,7 @@ const Navbar = () => {
     if (userInfo) {
       fetchNotifications();
 
-      socket = io('http://localhost:5000');
+      socket = io("https://gigflow-l0e1.onrender.com");
       socket.emit('setup', userInfo);
       
       
