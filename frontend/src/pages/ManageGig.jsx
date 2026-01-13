@@ -23,7 +23,7 @@ const ManageGig = () => {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (gig && userInfo && gig.ownerId._id !== userInfo._id) {
+    if (gig && userInfo && gig.ownerId?._id !== userInfo._id) {
       navigate('/');
     }
   }, [gig, userInfo, navigate]);

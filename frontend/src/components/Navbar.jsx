@@ -12,14 +12,13 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
 
-  
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   
-  
   const dropdownRef = useRef(null);
   
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,21 +29,33 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  
+  // Socket & Notifications Logic
   useEffect(() => {
     if (userInfo) {
       fetchNotifications();
 
-      socket = io("https://gigflow-l0e1.onrender.com");
+      // ✅ FIX: Automatically switch between Localhost (Dev) and Render (Prod)
+      const SOCKET_URL = import.meta.env.MODE === "development"
+        ? "http://localhost:5000"
+        : "https://gigflow-l0e1.onrender.com";
+
+      socket = io(SOCKET_URL, {
+        withCredentials: true,
+        transports: ["websocket", "polling"], // Try WebSocket first for speed
+      });
+
       socket.emit('setup', userInfo);
       
-      
       socket.on('notification', () => {
-        
         fetchNotifications();
       });
     }
-    return () => { if(socket) socket.disconnect(); }
+    return () => { 
+      if(socket) {
+        socket.disconnect();
+        socket.off("notification"); // Clean up listener
+      }
+    }
   }, [userInfo]);
 
   const fetchNotifications = async () => {
@@ -64,7 +75,6 @@ const Navbar = () => {
       setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
       setUnreadCount(prev => (prev > 0 ? prev - 1 : 0));
       setShowDropdown(false);
-      
       
       if (gigId) navigate(`/gig/${gigId}`);
     } catch (error) {
@@ -96,7 +106,7 @@ const Navbar = () => {
                     Post Job
                   </Link>
 
-                  
+                  {/* Notification Dropdown */}
                   <div className="relative" ref={dropdownRef}>
                     <button 
                       onClick={() => setShowDropdown(!showDropdown)}
@@ -106,7 +116,6 @@ const Navbar = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                       </svg>
                       
-                      
                       {unreadCount > 0 && (
                         <span className="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
                           {unreadCount}
@@ -114,7 +123,7 @@ const Navbar = () => {
                       )}
                     </button>
 
-                    
+                    {/* Dropdown Menu */}
                     {showDropdown && (
                       <div className="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in z-50">
                         <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/50">
@@ -145,11 +154,10 @@ const Navbar = () => {
                     )}
                   </div>
                   
-
                   <div className="h-6 w-px bg-slate-700 mx-2"></div>
 
                   <div className="flex items-center gap-3">
-                     <span className="text-slate-300 text-sm font-medium">
+                      <span className="text-slate-300 text-sm font-medium">
                       {userInfo.name}
                     </span>
                     <button

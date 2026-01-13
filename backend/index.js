@@ -1,32 +1,56 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import connectDB from './config/db.js';
+const express = require('express');
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
+const cors = require('cors'); // <--- CRITICAL
+const connectDB = require('./config/db');
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 
-import authRoutes from './routes/authRoutes.js';
-import gigRoutes from './routes/gigRoutes.js';
-import bidRoutes from './routes/bidRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
+const authRoutes = require('./routes/authRoutes');
+const gigRoutes = require('./routes/gigRoutes');
+const bidRoutes = require('./routes/bidRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 dotenv.config();
 connectDB();
 
 const app = express();
+const server = http.createServer(app); 
 
-// --------- CORS ---------
+// ⬇️ THIS IS THE CRITICAL PART FOR VERCEL DEPLOYMENT ⬇️
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://gig-flow-87273hgo4-harsh-mehtas-projects-64ee88d3.vercel.app" // your Vercel frontend
+  "http://localhost:5173",
+  "https://gig-flow-87273hgo4-harsh-mehtas-projects-64ee88d3.vercel.app", // Your Vercel URL
+  // If you have a different Vercel URL, add it here too
 ];
 
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true,
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
+  credentials: true, // Required for cookies
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }));
-// -----------------------
+
+const io = new Server(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+// ⬆️ END OF CRITICAL PART ⬆️
+
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log('Connected to socket.io');
+  socket.on('setup', (userData) => {
+    socket.join(userData._id);
+    socket.emit('connected');
+  });
+  socket.on('disconnect', () => {
+    console.log('USER DISCONNECTED');
+  });
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,4 +62,4 @@ app.use('/api/bids', bidRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
