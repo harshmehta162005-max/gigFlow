@@ -21,10 +21,10 @@ const server = http.createServer(app);
 // ⬇️ THIS IS THE CRITICAL PART FOR VERCEL DEPLOYMENT ⬇️
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://gig-flow-wpbo-q0bz9kxf3-harsh-mehtas-projects-64ee88d3.vercel.app",
   "https://gig-flow-87273hgo4-harsh-mehtas-projects-64ee88d3.vercel.app", // Your Vercel URL
   // If you have a different Vercel URL, add it here too
   "https://gigflow.vercel.app",
-  "gig-flow-wpbo-q0bz9kxf3-harsh-mehtas-projects-64ee88d3.vercel.app",
 ];
 
 app.use(cors({
