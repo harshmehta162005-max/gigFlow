@@ -22,10 +22,14 @@ const server = http.createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:5173", 
+    origin: [
+      "http://localhost:5173", 
+      "https://gig-flow-k18txqoop-harsh-mehtas-projects-64ee88d3.vercel.app"
+    ],
     credentials: true,
   },
 });
+
 
 
 app.set('io', io);
