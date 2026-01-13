@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
-import axios from 'axios';
+import api from '../utils/axios';
 import io from 'socket.io-client';
 
 let socket;
@@ -49,7 +49,7 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data } = await axios.get('/api/notifications');
+      const { data } = await api.get('/notifications');
       setNotifications(data);
       setUnreadCount(data.filter(n => !n.read).length);
     } catch (error) {
@@ -59,7 +59,7 @@ const Navbar = () => {
 
   const markAsRead = async (id, gigId) => {
     try {
-      await axios.patch(`/api/notifications/${id}/read`);
+      await api.patch(`/notifications/${id}/read`);
       
       setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
       setUnreadCount(prev => (prev > 0 ? prev - 1 : 0));

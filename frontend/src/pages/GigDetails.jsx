@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchGigById } from '../redux/slices/gigSlice';
 import { placeBid, clearBidMessages } from '../redux/slices/bidSlice';
 import Navbar from '../components/Navbar';
-import axios from 'axios';
+import api from '../utils/axios';
 
 const GigDetails = () => {
   const { id } = useParams();
@@ -29,7 +29,7 @@ const GigDetails = () => {
     const checkStatus = async () => {
       if (userInfo && id) {
         try {
-          const { data } = await axios.get(`/api/bids/check/${id}`);
+          const { data } = await api.get(`/bids/check/${id}`);
           setHasApplied(data.hasApplied);
         } catch (error) {
           console.error("Failed to check bid status", error);
