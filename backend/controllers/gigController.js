@@ -60,20 +60,6 @@ const getGigById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
-const deleteGig = async (req, res) => {
-  const gig = await Gig.findById(req.params.id);
-  if (!gig) return res.status(404).json({ message: 'Gig not found' });
-  
-  // Check ownership
-  if (gig.ownerId.toString() !== req.user.id) {
-    return res.status(401).json({ message: 'Not authorized' });
-  }
 
-  await gig.deleteOne();
-  res.json({ message: 'Gig removed' });
-};
 
-// Don't forget to export it and add it to your routes!
-module.exports = { getAllGigs, createGig, getGigById, deleteGig };
-
-module.exports = { getAllGigs, createGig, getGigById,deleteGig };
+module.exports = { getAllGigs, createGig, getGigById };

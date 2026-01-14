@@ -4,13 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchGigById } from '../redux/slices/gigSlice';
 import { fetchBids, hireFreelancer } from '../redux/slices/bidSlice';
 import Navbar from '../components/Navbar';
-import api from '../utils/axios'; // <--- Added this import
 
 const ManageGig = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  
   const [confirmModal, setConfirmModal] = useState({ show: false, bidId: null });
 
   const { gig, loading: gigLoading } = useSelector((state) => state.gigs);
@@ -32,22 +32,16 @@ const ManageGig = () => {
     setConfirmModal({ show: true, bidId });
   };
 
-  // 🔥 NEW: Delete Functionality
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this Job? This action cannot be undone.")) {
-      try {
-        await api.delete(`/gigs/${id}`);
-        navigate('/'); // Redirect to home after delete
-      } catch (error) {
-        alert(error.response?.data?.message || "Failed to delete gig");
-      }
-    }
-  };
-
+  
   const confirmHireAction = async () => {
     if (confirmModal.bidId) {
+      
       await dispatch(hireFreelancer(confirmModal.bidId));
+      
+      
       dispatch(fetchGigById(id)); 
+      
+      
       setConfirmModal({ show: false, bidId: null });
     }
   };
@@ -59,6 +53,7 @@ const ManageGig = () => {
     <>
       <Navbar />
 
+      
       {confirmModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-slate-800 border border-slate-600 p-6 rounded-xl shadow-2xl max-w-md w-full relative animate-scale-in">
@@ -93,7 +88,7 @@ const ManageGig = () => {
               For job: <span className="text-indigo-400 font-medium">{gig.title}</span>
             </p>
           </div>
-          <div className="text-right flex flex-col items-end gap-3">
+          <div className="text-right">
             
             <div className={`px-4 py-2 rounded-lg font-bold uppercase text-sm tracking-wide border ${
               gig.status === 'open' 
@@ -102,18 +97,6 @@ const ManageGig = () => {
             }`}>
               {gig.status === 'open' ? 'Active • Accepting Bids' : 'Job Assigned'}
             </div>
-
-            {/* 🔥 NEW: Delete Button */}
-            <button 
-              onClick={handleDelete}
-              className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete Job
-            </button>
-
           </div>
         </div>
 
